@@ -9,6 +9,11 @@ public class Librarian extends User {
         library = new Library();
     }
 
+    public Librarian(User user){
+        super(user);
+        library = new Library();
+    }
+
     public Library getLibrary() {
         return library;
     }

@@ -1,17 +1,17 @@
 public class BookCopy {
 
 	private int bookCopyID;
-    private Borrower borrower = null;
-    private Book book;
+    private int bookID;
+    private int borrowerID;
 
-    public BookCopy(int bookCopyID, Book book){
+    public BookCopy(int bookCopyID, int bookID, int borrowerID){
         this.bookCopyID = bookCopyID;
-        this.book = book;
+        this.bookID = bookID;
+        this.borrowerID = borrowerID;
     }
 
-    public BookCopy(int bookCopyID, Book book, Borrower borrower){
-        this(bookCopyID, book);
-        this.borrower = borrower;
+    public BookCopy(int bookCopyID){
+        this.bookCopyID = bookCopyID;
     }
 
     public int getBookCopyID() {
@@ -22,19 +22,19 @@ public class BookCopy {
         this.bookCopyID = bookCopyID;
     }
 
-    public Book getBook() {
-        return book;
+    public int getBookID() {
+        return bookID;
     }
 
-    public void setBook(Book book) {
-        this.book = book;
+    public void setBookID(int bookID) {
+        this.bookID = bookID;
     }
 
-    public Borrower getBorrower() {
-        return borrower;
+    public int getBorrowerID() {
+        return borrowerID;
     }
 
-    public void setBorrower(Borrower borrower) {
-        this.borrower = borrower;
+    public void setBorrowerID(int borrowerID) {
+        this.borrowerID = borrowerID;
     }
 }

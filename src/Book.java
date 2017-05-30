@@ -2,25 +2,31 @@ import java.util.ArrayList;
 
 public class Book {
 
-    private String bookID;
+    private int bookID;
     private String title;
     private String author;
     private String ISBN;
     private int edition;
     private ArrayList<BookCopy> bookCopies;
 
-    public Book(String bookID, String title, String ISBN, int edition) {
+    public Book(int bookID){
         this.bookID = bookID;
+        bookCopies = new ArrayList<>();
+    }
+
+    public Book(int bookID, String title, String author, String ISBN, int edition) {
+        this(bookID);
         this.title = title;
+        this.author = author;
         this.ISBN = ISBN;
         this.edition = edition;
     }
 
-    public String getBookID() {
+    public int getBookID() {
         return bookID;
     }
 
-    public void setBookID(String bookID) {
+    public void setBookID(int bookID) {
         this.bookID = bookID;
     }
 
@@ -62,5 +68,13 @@ public class Book {
 
     public int getQuantity(){
         return bookCopies.size();
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 }

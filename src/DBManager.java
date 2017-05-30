@@ -42,8 +42,13 @@ public class DBManager {
                     "`title` TEXT NOT NULL," +
                     "`author` TEXT NOT NULL," +
                     "`ISBN` TEXT NOT NULL," +
-                    "`edition` INTEGER DEFAULT 0," +
-                    "`quantity` INTEGER DEFAULT 0);";
+                    "`edition` INTEGER DEFAULT 0);";
+            execute(sql);
+
+            sql = "CREATE TABLE IF NOT EXISTS `bookCopy` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "`bookID` INTEGER," +
+                    "`borrowerID` INTEGER);";
             execute(sql);
         } catch (SQLException e) {
             System.out.println(e.getMessage());

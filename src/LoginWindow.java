@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 public class LoginWindow extends JFrame implements ActionListener, KeyListener{
 
@@ -88,6 +87,65 @@ public class LoginWindow extends JFrame implements ActionListener, KeyListener{
         DbUtils.closeQuietly(result.statement);
     }
 
+    private void getAllBorrowers(Library library){
+        String query = String .format("SELECT * FROM `user` " +
+                "INNER JOIN `borrower` " +
+                "ON user.id = borrower.id AND user.position='b';");
+        Result result = DBManager.getData(query);
+        try {
+            while(result.resultSet.next()){
+                int id = result.resultSet.getInt("id");
+                String password = result.resultSet.getString("password");
+                String name = result.resultSet.getString("name");
+                String surname = result.resultSet.getString("surname");
+                String phoneNumber = result.resultSet.getString("phoneNumber");
+                Borrower borrower = new Borrower(id, password, name, surname, phoneNumber);
+                library.addBorrower(borrower);
+            }
+        } catch (SQLException e1) {
+            e1.printStackTrace();
+        }
+        DbUtils.closeQuietly(result.resultSet);
+        DbUtils.closeQuietly(result.statement);
+    }
+
+    private void getAllBooks(Library library){
+        String query = "SELECT * FROM `book`;";
+        Result result = DBManager.getData(query);
+        try {
+            while(result.resultSet.next()){
+                int ID = result.resultSet.getInt("id");
+                String title = result.resultSet.getString("title");
+                String author = result.resultSet.getString("author");
+                String ISBN = result.resultSet.getString("ISBN");
+                int edition = result.resultSet.getInt("edition");
+                Book book = new Book(ID, title, author, ISBN, edition);
+                library.addBook(book);
+            }
+        } catch (SQLException e1) {
+            e1.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(result.resultSet);
+            DbUtils.closeQuietly(result.statement);
+        }
+    }
+
+    private void getAllBookCopies(Library library){
+        String query = "SELECT * FROM `bookCopy`;";
+        Result result = DBManager.getData(query);
+        try {
+            while(result.resultSet.next()){
+                int b_id = result.resultSet.getInt("id");
+                int bookID = result.resultSet.getInt("bookID");
+                int borrowerID = result.resultSet.getInt("borrowerID");
+                BookCopy bookCopy = new BookCopy(b_id, bookID, borrowerID);
+                library.addBookCopy(bookCopy);
+            }
+        } catch (SQLException e1) {
+            e1.printStackTrace();
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         String pass = String.valueOf(password.getPassword());
@@ -111,18 +169,24 @@ public class LoginWindow extends JFrame implements ActionListener, KeyListener{
             int id;
             try{
                 id = Integer.parseInt(login.getText().substring(1));
-                Librarian librarian = (Librarian) DBManager.isExist(id);
-                if(librarian == null){
+                User user = DBManager.isExist(id);
+                if(user == null){
                     error.setText("Wrong login or password");
                     return;
                 }
+                Librarian librarian = new Librarian(user);
                 if(!pass.equals(librarian.getPassword())){
                     error.setText("Wrong login or password");
                     return;
                 }
 
-                
-                return;
+                Library library = new Library();
+                getAllBorrowers(library);
+                getAllBooks(library);
+                getAllBookCopies(library);
+                library.info();
+                librarian.setLibrary(library);
+                //OPEN LIBRARIAN WINDOW
             }catch (IllegalArgumentException ex){
                 error.setText("Wrong login or password");
                 return;

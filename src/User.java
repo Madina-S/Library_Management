@@ -14,6 +14,18 @@ public class User {
         this.phoneNumber = phoneNumber;
     }
 
+    public User(User user){
+        if(user == null)
+            return;
+
+        this.ID = user.getID();
+        this.password = user.getPassword();
+        this.name = user.getName();
+        this.surname = user.getSurname();
+        this.phoneNumber = user.getPhoneNumber();
+        user = null;
+    }
+
     public int getID() {
         return ID;
     }
