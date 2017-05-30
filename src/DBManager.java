@@ -19,7 +19,6 @@ public class DBManager {
         try {
             String url = "jdbc:sqlite:" + DBName;
             connection = DriverManager.getConnection(url);
-            System.out.println("Connection to SQLite has been established.");
 
             String sql = "CREATE TABLE IF NOT EXISTS `user` (" +
                     "`id` INTEGER PRIMARY KEY AUTOINCREMENT," +

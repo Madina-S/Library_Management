@@ -2,10 +2,7 @@ import org.apache.commons.dbutils.DbUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.sql.SQLException;
 
 public class LoginWindow extends JFrame implements ActionListener, KeyListener{
@@ -13,6 +10,7 @@ public class LoginWindow extends JFrame implements ActionListener, KeyListener{
     private JTextField login;
     private JPasswordField password;
     private JLabel error;
+    private boolean isWindowOpened = false;
 
     public LoginWindow(){
         JLabel nameLabel = new JLabel("Library Management System", SwingConstants.CENTER);
@@ -35,7 +33,7 @@ public class LoginWindow extends JFrame implements ActionListener, KeyListener{
         mainPanel.add(nameLabel, gbc);
 
         JPanel compPanel = new JPanel();
-        compPanel.setLayout(new GridLayout(2, 2, 5, 3));
+        compPanel.setLayout(new GridLayout(2, 2, 5, 8));
         loginL.setHorizontalAlignment(JLabel.RIGHT);
         compPanel.add(loginL);
         compPanel.add(login);
@@ -55,6 +53,15 @@ public class LoginWindow extends JFrame implements ActionListener, KeyListener{
         setResizable(false);
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation((dim.width - this.getSize().width) / 2, (dim.height - this.getSize().height) / 2);
+        addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                if(!isWindowOpened)
+                    DBManager.closeConnection();
+            }
+        });
 
         login.addKeyListener(this);
         password.addKeyListener(this);
@@ -68,16 +75,14 @@ public class LoginWindow extends JFrame implements ActionListener, KeyListener{
         try {
             while(result.resultSet.next()){
                 int id = result.resultSet.getInt("id");
-                String password = result.resultSet.getString("password");
                 String name = result.resultSet.getString("name");
                 String surname = result.resultSet.getString("surname");
                 String phoneNumber = result.resultSet.getString("phoneNumber");
+                User user = new User(id, "", name, surname, phoneNumber);
                 if(position == 'l'){
-                    Librarian librarian = new Librarian(id, password, name, surname, phoneNumber);
-                    admin.addLibrarian(librarian);
+                    admin.addLibrarian(user);
                 }else if(position == 'b'){
-                    Borrower borrower = new Borrower(id, password, name, surname, phoneNumber);
-                    admin.addBorrower(borrower);
+                    admin.addBorrower(user);
                 }
             }
         } catch (SQLException e1) {
@@ -156,8 +161,11 @@ public class LoginWindow extends JFrame implements ActionListener, KeyListener{
                 getAllUsers(admin, "librarian", 'l');
                 getAllUsers(admin, "borrower", 'b');
 
-                admin.info();
-                ////OPEN ADMIN WINDOW
+                isWindowOpened = true;
+                setVisible(false);
+                AdminFrame adminFrame = new AdminFrame(admin);
+                adminFrame.setVisible(true);
+                dispose();
                 return;
             }else{
                 error.setText("Wrong login or password");
@@ -186,6 +194,8 @@ public class LoginWindow extends JFrame implements ActionListener, KeyListener{
                 getAllBookCopies(library);
                 library.info();
                 librarian.setLibrary(library);
+
+                isWindowOpened = true;
                 //OPEN LIBRARIAN WINDOW
             }catch (IllegalArgumentException ex){
                 error.setText("Wrong login or password");

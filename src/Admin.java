@@ -2,8 +2,8 @@ import java.util.ArrayList;
 
 public class Admin extends User{
 
-    private ArrayList<Borrower> borrowers;
-    private ArrayList<Librarian> librarians;
+    private ArrayList<User> borrowers;
+    private ArrayList<User> librarians;
 
     public Admin(){
         super(-1, "admin", "", "", "");
@@ -11,51 +11,39 @@ public class Admin extends User{
         librarians = new ArrayList<>();
     }
 
-    public ArrayList<Borrower> getBorrowers() {
+    public ArrayList<User> getBorrowers() {
         return borrowers;
     }
 
-    public void setBorrowers(ArrayList<Borrower> borrowers) {
+    public void setBorrowers(ArrayList<User> borrowers) {
         this.borrowers = borrowers;
     }
 
-    public ArrayList<Librarian> getLibrarians() {
+    public ArrayList<User> getLibrarians() {
         return librarians;
     }
 
-    public void setLibrarians(ArrayList<Librarian> librarians) {
+    public void setLibrarians(ArrayList<User> librarians) {
         this.librarians = librarians;
     }
 
-    public void addBorrower(Borrower borrower){
+    public void addBorrower(User borrower){
         borrowers.add(borrower);
     }
 
-    public void removeBorrower(Borrower borrower){
+    public void removeBorrower(User borrower){
         for(int i = 0; i < borrowers.size(); i++)
             if(borrowers.get(i).getID() == borrower.getID())
                 borrowers.remove(i);
     }
 
-    public void addLibrarian(Librarian librarian){
+    public void addLibrarian(User librarian){
         librarians.add(librarian);
     }
 
-    public void removeLibrarian(Librarian librarian){
+    public void removeLibrarian(User librarian){
         for(int i = 0; i < librarians.size(); i++)
             if(librarians.get(i).getID() == librarian.getID())
                 librarians.remove(i);
-    }
-
-    public void info(){
-        System.out.println("Borrowers");
-        for(Borrower b : borrowers)
-            System.out.println(b.getName());
-
-        System.out.println("librarians");
-        for(Librarian l : librarians)
-            System.out.println(l.getName());
-
-        System.out.println("That is all");
     }
 }
