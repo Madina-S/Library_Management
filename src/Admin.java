@@ -32,9 +32,7 @@ public class Admin extends User{
     }
 
     public void removeBorrower(User borrower){
-        for(int i = 0; i < borrowers.size(); i++)
-            if(borrowers.get(i).getID() == borrower.getID())
-                borrowers.remove(i);
+        removeBorrower(borrower.getID());
     }
 
     public void addLibrarian(User librarian){
@@ -42,8 +40,18 @@ public class Admin extends User{
     }
 
     public void removeLibrarian(User librarian){
+        removeLibrarian(librarian.getID());
+    }
+
+    public void removeLibrarian(int id){
         for(int i = 0; i < librarians.size(); i++)
-            if(librarians.get(i).getID() == librarian.getID())
+            if(librarians.get(i).getID() == id)
                 librarians.remove(i);
+    }
+
+    public void removeBorrower(int id){
+        for(int i = 0; i < borrowers.size(); i++)
+            if(borrowers.get(i).getID() == id)
+                borrowers.remove(i);
     }
 }

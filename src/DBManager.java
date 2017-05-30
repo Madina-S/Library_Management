@@ -9,9 +9,6 @@ public class DBManager {
 
     private DBManager(){}
 
-    public static void main(String[] args){
-    }
-
     private static boolean connect(){
         if(connection != null)
             return true;
@@ -135,6 +132,25 @@ public class DBManager {
             e.printStackTrace();
         } finally {
             return result;
+        }
+    }
+
+    public static boolean delete(String query){
+        if(!connect()){
+            JOptionPane.showMessageDialog(null, "There was error with database connection");
+            return false;
+        }
+
+        Statement stmt = null;
+        int res = 0;
+        try {
+            stmt = connection.createStatement();
+            res = stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(stmt);
+            return res != 0;
         }
     }
 }

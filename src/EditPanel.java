@@ -9,8 +9,10 @@ public class EditPanel extends JPanel implements ActionListener{
     private String name;
     private String surname;
     private String phoneNumber;
+    private int userType;
 
     private Admin admin;
+    private JTable table;
 
     private JTextField nameFiled;
     private JTextField surnameFiled;
@@ -70,18 +72,19 @@ public class EditPanel extends JPanel implements ActionListener{
         component.setMaximumSize(new Dimension(150, 30));
     }
 
-    public void set(int id, String name, String surname, String phoneNumber){
+    public void set(int id, String name, String surname, String phoneNumber, int userType, JTable table){
         this.id = id;
         this.name = name;
         this.surname = surname;
         this.phoneNumber = phoneNumber;
+        this.userType = userType;
         setNameField(name);
         setSurnameField(surname);
         setPhoneNumberField(phoneNumber);
     }
 
-    public void set(){
-        set(-1, "", "", "");
+    public void set(int userType, JTable table){
+        set(-1, "", "", "", userType, table);
     }
 
     private void setNameField(String name){

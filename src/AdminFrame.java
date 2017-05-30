@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -80,6 +81,10 @@ public class AdminFrame extends JFrame implements ActionListener{
                 return c;
             }
         };
+        /*JTableHeader header = table.getTableHeader();
+        header.setOpaque(false);
+        header.setBackground(new Color(191, 209, 229));
+        HEADER BACKGROUND SHOULD BE ADDED*/
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         Object[][] row = null;
         String[] column = {"ID", "Name", "Surname", "Phone Number"};
@@ -109,20 +114,40 @@ public class AdminFrame extends JFrame implements ActionListener{
         tabbedPane.add(name, sp);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == add){
-            editPanel.set();
-            editPanel.setVisible(true);
-            return;
+    private boolean deleteRecord(int id, int userType) {
+        String sql1 = null, sql2 = null;
+        if(userType == 0) {
+            sql1 = String.format("DELETE FROM `borrower` WHERE id = %d;", id);
+            sql2 = String.format("DELETE FROM `user` WHERE id = %d AND position = 'b';", id);
+        } else if(userType == 1){
+            sql1 = String.format("DELETE FROM `librarian` WHERE id = %d;", id);
+            sql2 = String.format("DELETE FROM `user` WHERE id = %d AND position = 'l';", id);
         }
 
+        if(sql1 == null)
+            return false;
+
+        if(DBManager.delete(sql1))
+            return DBManager.delete(sql2);
+
+        return false;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
         JScrollPane sc = (JScrollPane) tabbedPane.getSelectedComponent();
         int row;
         if (sc != null) {
             JViewport view = sc.getViewport();
             JTable t = (JTable) view.getComponent(0);
             t.clearSelection();
+            int userType = tabbedPane.getSelectedIndex();
+            if(e.getSource() == add){
+                editPanel.set(userType, t);
+                editPanel.setVisible(true);
+                return;
+            }
+
             row = t.getSelectedRow();
             if(row == -1)
                 return;
@@ -132,9 +157,20 @@ public class AdminFrame extends JFrame implements ActionListener{
                 String name = t.getModel().getValueAt(row, 1).toString();
                 String surname = t.getModel().getValueAt(row, 2).toString();
                 String phoneNumber = t.getModel().getValueAt(row, 3).toString();
-                editPanel.set(id, name, surname, phoneNumber);
+                editPanel.set(id, name, surname, phoneNumber, userType, t);
             }else if(e.getSource() == delete){
-                deleteRecord(id);
+                if(deleteRecord(id, userType)){
+                    if(userType == 0)
+                        admin.removeBorrower(id);
+                    else if(userType == 1)
+                        admin.removeLibrarian(id);
+                    ////
+                    //
+                    // CHECK VALIDATION
+                    // CONTINUE HERE
+                    /////
+                    ((DefaultTableModel)t.getModel()).removeRow(row);
+                }
                 return;
             }
             editPanel.setVisible(true);
