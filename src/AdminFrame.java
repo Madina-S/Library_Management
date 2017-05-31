@@ -1,6 +1,5 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -128,7 +127,13 @@ public class AdminFrame extends JFrame implements ActionListener{
             return false;
 
         if(DBManager.delete(sql1))
-            return DBManager.delete(sql2);
+            if(DBManager.delete(sql2))
+                if(userType == 0){
+                    String sql3 = String.format("UPDATE `bookCopy` SET borrowerID = -1 WHERE borrowerID = %d;", id);
+                    return DBManager.delete(sql3);
+                }else{
+                    return true;
+                }
 
         return false;
     }
@@ -140,7 +145,6 @@ public class AdminFrame extends JFrame implements ActionListener{
         if (sc != null) {
             JViewport view = sc.getViewport();
             JTable t = (JTable) view.getComponent(0);
-            t.clearSelection();
             int userType = tabbedPane.getSelectedIndex();
             if(e.getSource() == add){
                 editPanel.set(userType, t);
@@ -151,24 +155,20 @@ public class AdminFrame extends JFrame implements ActionListener{
             row = t.getSelectedRow();
             if(row == -1)
                 return;
+            t.clearSelection();
 
             int id = Integer.parseInt(t.getModel().getValueAt(row, 0).toString());
             if(e.getSource() == edit){
                 String name = t.getModel().getValueAt(row, 1).toString();
                 String surname = t.getModel().getValueAt(row, 2).toString();
                 String phoneNumber = t.getModel().getValueAt(row, 3).toString();
-                editPanel.set(id, name, surname, phoneNumber, userType, t);
+                editPanel.set(id, name, surname, phoneNumber, userType, t, row);
             }else if(e.getSource() == delete){
                 if(deleteRecord(id, userType)){
                     if(userType == 0)
                         admin.removeBorrower(id);
                     else if(userType == 1)
                         admin.removeLibrarian(id);
-                    ////
-                    //
-                    // CHECK VALIDATION
-                    // CONTINUE HERE
-                    /////
                     ((DefaultTableModel)t.getModel()).removeRow(row);
                 }
                 return;

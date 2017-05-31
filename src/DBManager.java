@@ -153,5 +153,64 @@ public class DBManager {
             return res != 0;
         }
     }
+
+    public static Result insertWithID(String query){
+        if(!connect()){
+            JOptionPane.showMessageDialog(null, "There was error with database connection");
+            return null;
+        }
+
+        Result result = null;
+        try {
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(query);
+            ResultSet resultSet = statement.getGeneratedKeys();
+            result = new Result();
+            result.resultSet = resultSet;
+            result.statement = statement;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return result;
+        }
+    }
+
+    public static boolean insert(String query){
+        if(!connect()){
+            JOptionPane.showMessageDialog(null, "There was error with database connection");
+            return false;
+        }
+
+        int res = -1;
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            res = statement.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(statement);
+            return res != -1;
+        }
+    }
+
+    public static boolean edit(String query){
+        if(!connect()){
+            JOptionPane.showMessageDialog(null, "There was error with database connection");
+            return false;
+        }
+
+        int res = -1;
+        Statement stmt = null;
+        try {
+            stmt = connection.createStatement();
+            res = stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            DbUtils.closeQuietly(stmt);
+            return res != -1;
+        }
+    }
 }
 
