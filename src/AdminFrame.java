@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-public class AdminFrame extends JFrame implements ActionListener{
+public class AdminFrame extends Frame implements ActionListener{
 
     private Admin admin;
 
@@ -54,14 +54,15 @@ public class AdminFrame extends JFrame implements ActionListener{
         main.add(btnPanel, BorderLayout.PAGE_START);
         main.add(tabbedPane, BorderLayout.CENTER);
 
-        editPanel = new EditPanel(admin);
+        editPanel = new EditPanel(admin, this);
 
         setLayout(new BorderLayout());
         add(main, BorderLayout.CENTER);
         add(editPanel, BorderLayout.LINE_START);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         pack();
+        setOptimalLocation();
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     private void addTable(String name, ArrayList<User> objects){
@@ -138,6 +139,12 @@ public class AdminFrame extends JFrame implements ActionListener{
         return false;
     }
 
+    public void enableButtons(boolean enabled){
+        delete.setEnabled(enabled);
+        edit.setEnabled(enabled);
+        add.setEnabled(enabled);
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         JScrollPane sc = (JScrollPane) tabbedPane.getSelectedComponent();
@@ -149,6 +156,7 @@ public class AdminFrame extends JFrame implements ActionListener{
             if(e.getSource() == add){
                 editPanel.set(userType, t);
                 editPanel.setVisible(true);
+                enableButtons(false);
                 return;
             }
 
@@ -163,6 +171,7 @@ public class AdminFrame extends JFrame implements ActionListener{
                 String surname = t.getModel().getValueAt(row, 2).toString();
                 String phoneNumber = t.getModel().getValueAt(row, 3).toString();
                 editPanel.set(id, name, surname, phoneNumber, userType, t, row);
+                enableButtons(false);
             }else if(e.getSource() == delete){
                 if(deleteRecord(id, userType)){
                     if(userType == 0)

@@ -5,9 +5,11 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.sql.SQLException;
 
-public class EditPanel extends JPanel implements ActionListener{
+public class EditPanel extends JPanel implements ActionListener, KeyListener{
 
     private int id;
     private String name;
@@ -17,17 +19,21 @@ public class EditPanel extends JPanel implements ActionListener{
 
     private Admin admin;
     private JTable table;
+    private AdminFrame frame;
     private int row = -1;
 
     private JTextField nameFiled;
     private JTextField surnameFiled;
     private JTextField phoneNumberField;
 
+    private JLabel error;
+
     private JButton save;
     private JButton cancel;
 
-    public EditPanel(Admin admin){
+    public EditPanel(Admin admin, AdminFrame frame){
         this.admin = admin;
+        this.frame = frame;
 
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -40,6 +46,13 @@ public class EditPanel extends JPanel implements ActionListener{
         resize(nameFiled);
         resize(surnameFiled);
         resize(phoneNumberField);
+        nameFiled.addKeyListener(this);
+        surnameFiled.addKeyListener(this);
+        phoneNumberField.addKeyListener(this);
+
+        error = new JLabel("");
+        error.setForeground(Color.RED);
+        resize(error);
 
         JLabel nameL = new JLabel("Name");
         resize(nameL);
@@ -50,6 +63,8 @@ public class EditPanel extends JPanel implements ActionListener{
 
         setPreferredSize(new Dimension(300, 100));
         add(Box.createRigidArea(new Dimension(200, 100)), c);
+        add(error, c);
+        add(Box.createRigidArea(new Dimension(5, 5)), c);
         add(nameL, c);
         add(nameFiled, c);
         add(surnameL, c);
@@ -80,9 +95,9 @@ public class EditPanel extends JPanel implements ActionListener{
     public void set(int id, String name, String surname, String phoneNumber, int userType, JTable table, int row){
         this.id = id;
         this.row = row;
-        this.name = name;
-        this.surname = surname;
-        this.phoneNumber = phoneNumber;
+        this.name = name.trim();
+        this.surname = surname.trim();
+        this.phoneNumber = phoneNumber.trim();
         this.userType = userType;
         this.table = table;
         setNameField(name);
@@ -107,14 +122,17 @@ public class EditPanel extends JPanel implements ActionListener{
     }
 
     private boolean isChanged(){
-        if(!nameFiled.getText().equals(name))
+        if(!nameFiled.getText().trim().equals(name)){
             return true;
+        }
 
-        if(!surnameFiled.getText().equals(surname))
+        if(!surnameFiled.getText().trim().equals(surname)){
             return true;
+        }
 
-        if(!phoneNumberField.getText().equals(phoneNumber))
+        if(!phoneNumberField.getText().trim().equals(phoneNumber)){
             return true;
+        }
 
         return false;
     }
@@ -155,21 +173,37 @@ public class EditPanel extends JPanel implements ActionListener{
     }
 
     private boolean editDataBase(){
-        String tableName = "";
         char type = '0';
         if(userType == 0){
-            tableName = "borrower";
             type = 'b';
         }else if(userType == 1){
-            tableName = "librarian";
             type = 'l';
         }
         name = nameFiled.getText();
         surname = surnameFiled.getText();
         phoneNumber = phoneNumberField.getText();
-        String query = String.format("UPDATE `%s` SET name = '%s', surname = '%s', phoneNumber = '%s' " +
-                "WHERE borrowerID = %d AND position = '%c';", tableName, name, surname, phoneNumber, id, type);
+        String query = String.format("UPDATE `user` SET name = '%s', surname = '%s', phoneNumber = '%s' " +
+                "WHERE id = %d AND position = '%c';", name, surname, phoneNumber, id, type);
         return DBManager.edit(query);
+    }
+
+    private boolean isDataValid(){
+        if(nameFiled.getText().trim().isEmpty())
+            return false;
+
+        if(surnameFiled.getText().trim().isEmpty())
+            return false;
+
+        if(phoneNumberField.getText().trim().isEmpty())
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public void setVisible(boolean aFlag){
+        super.setVisible(aFlag);
+        frame.enableButtons(!aFlag);
     }
 
     @Override
@@ -180,17 +214,19 @@ public class EditPanel extends JPanel implements ActionListener{
         }
 
         if(e.getSource() == save){
+            if(!isDataValid()){
+                error.setText("Not valid info");
+                return;
+            }
+
             if(id == -1){
                 if(addToDataBase()){
-                    if(table == null)
-                        System.out.println("table is null");
                     DefaultTableModel model = (DefaultTableModel) table.getModel();
                     model.addRow(new Object[]{id, name, surname, phoneNumber});
                     setVisible(false);
                 }
             }else{
-                if(!isChanged()){
-                    System.out.println("changed");
+                if(isChanged()){
                     if(editDataBase()){
                         DefaultTableModel model = (DefaultTableModel) table.getModel();
                         model.setValueAt(name, row, 1);
@@ -198,8 +234,25 @@ public class EditPanel extends JPanel implements ActionListener{
                         model.setValueAt(phoneNumber, row, 3);
                         setVisible(false);
                     }
+                }else{
+                    error.setText("There is no change");
                 }
             }
         }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        error.setText("");
     }
 }

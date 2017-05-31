@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
 
-public class LoginWindow extends JFrame implements ActionListener, KeyListener{
+public class LoginWindow extends Frame implements ActionListener, KeyListener{
 
     private JTextField login;
     private JPasswordField password;
@@ -51,8 +51,7 @@ public class LoginWindow extends JFrame implements ActionListener, KeyListener{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(400, 250);
         setResizable(false);
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        this.setLocation((dim.width - this.getSize().width) / 2, (dim.height - this.getSize().height) / 2);
+        setOptimalLocation();
         addWindowListener(new WindowAdapter()
         {
             @Override
