@@ -6,4 +6,4 @@ No one can create admin.
 
 Only admin can add librarian.
 
-Default password for librarian and borrower is 123. In the first sign in, the user must change default password.
+Default password for librarian and borrower is 123. In the first login, the user must change default password.
