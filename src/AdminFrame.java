@@ -4,145 +4,32 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 
-public class AdminFrame extends Frame implements ActionListener{
+public class AdminFrame extends UserFrame implements ActionListener{
 
+    private static String[] column = {"ID", "Name", "Surname", "Phone Number"};
     private Admin admin;
-
-    private JTabbedPane tabbedPane;
-    private JButton add, delete, edit;
-    private EditPanel editPanel;
+    private AdminEditPanel editPanel;
 
     public AdminFrame(Admin admin) {
+        super();
+
         this.admin = admin;
 
-        tabbedPane = new JTabbedPane() {
-            @Override
-            public void setSelectedIndex(int index) {
-                JScrollPane sc = (JScrollPane) tabbedPane.getSelectedComponent();
-                if (sc != null) {
-                    JViewport view = sc.getViewport();
-                    JTable t = (JTable) view.getComponent(0);
-                    t.clearSelection();
-                }
-                super.setSelectedIndex(index);
-            }
-        };
+        DefaultTableModel dtm = addTable("Borrowers");
+        addObjectToTable(dtm, admin.getBorrowers());
+        dtm = addTable("Librarians");
+        addObjectToTable(dtm, admin.getLibrarians());
 
-        addTable("Borrowers", admin.getBorrowers());
-        addTable("Librarians", admin.getLibrarians());
-
-        BorderLayout layout = new BorderLayout();
-        layout.setVgap(10);
-        JPanel main = new JPanel();
-        main.setLayout(layout);
-        main.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-
-        JPanel btnPanel = new JPanel();
-        btnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        add = new JButton("Add");
-        add.addActionListener(this);
-        delete = new JButton("Delete");
-        delete.addActionListener(this);
-        edit = new JButton("Edit");
-        edit.addActionListener(this);
-        btnPanel.add(add);
-        btnPanel.add(edit);
-        btnPanel.add(delete);
-
-        main.add(btnPanel, BorderLayout.PAGE_START);
-        main.add(tabbedPane, BorderLayout.CENTER);
-
-        editPanel = new EditPanel(admin, this);
-
-        setLayout(new BorderLayout());
-        add(main, BorderLayout.CENTER);
+        editPanel = new AdminEditPanel(admin, this);
         add(editPanel, BorderLayout.LINE_START);
-
-        pack();
-        setOptimalLocation();
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    private void addTable(String name, ArrayList<User> objects){
-        JTable table = new JTable(){
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            };
-
-            public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
-                Component c = super.prepareRenderer(renderer, row, column);
-                if(isRowSelected(row)){
-                    c.setBackground(new Color(153, 221, 254));
-                    return c;
-                }
-                c.setBackground(row % 2 == 0 ? Color.white : new Color(253, 255, 229));
-                return c;
-            }
-        };
-        /*JTableHeader header = table.getTableHeader();
-        header.setOpaque(false);
-        header.setBackground(new Color(191, 209, 229));
-        HEADER BACKGROUND SHOULD BE ADDED*/
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        Object[][] row = null;
-        String[] column = {"ID", "Name", "Surname", "Phone Number"};
-        DefaultTableModel dtm = new DefaultTableModel(row, column);
-        table.setModel(dtm);
-
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getTableHeader().setReorderingAllowed(false);
-        table.setBackground(Color.WHITE);
-        table.setSelectionBackground(new Color(153, 221, 254));
-
-        table.setRowHeight(28);
-
-        table.getColumnModel().getColumn(0).setWidth(0);
-        table.getColumnModel().getColumn(0).setMinWidth(0);
-        table.getColumnModel().getColumn(0).setMaxWidth(0);
-        table.getColumnModel().getColumn(0).setPreferredWidth(0);
-
-        for(int i = 0; i < objects.size(); i++){
-            User user = (User) objects.get(i);
-            dtm.addRow(new Object[]{user.getID(), user.getName(), user.getSurname(), user.getPhoneNumber()});
-        }
-
-        JScrollPane sp = new JScrollPane(table);
-        sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        tabbedPane.add(name, sp);
-    }
-
-    private boolean deleteRecord(int id, int userType) {
-        String sql1 = null, sql2 = null;
-        if(userType == 0) {
-            sql1 = String.format("DELETE FROM `borrower` WHERE id = %d;", id);
-            sql2 = String.format("DELETE FROM `user` WHERE id = %d AND position = 'b';", id);
-        } else if(userType == 1){
-            sql1 = String.format("DELETE FROM `librarian` WHERE id = %d;", id);
-            sql2 = String.format("DELETE FROM `user` WHERE id = %d AND position = 'l';", id);
-        }
-
-        if(sql1 == null)
-            return false;
-
-        if(DBManager.delete(sql1))
-            if(DBManager.delete(sql2))
-                if(userType == 0){
-                    String sql3 = String.format("UPDATE `bookCopy` SET borrowerID = -1 WHERE borrowerID = %d;", id);
-                    return DBManager.delete(sql3);
-                }else{
-                    return true;
-                }
-
-        return false;
-    }
-
-    public void enableButtons(boolean enabled){
-        delete.setEnabled(enabled);
-        edit.setEnabled(enabled);
-        add.setEnabled(enabled);
+    private DefaultTableModel addTable(String name){
+        return addTable(name, column);
     }
 
     @Override
@@ -173,9 +60,21 @@ public class AdminFrame extends Frame implements ActionListener{
                 editPanel.set(id, name, surname, phoneNumber, userType, t, row);
                 enableButtons(false);
             }else if(e.getSource() == delete){
-                if(deleteRecord(id, userType)){
-                    if(userType == 0)
+                String sql1 = null, sql2 = null;
+                if(userType == 0) {
+                    sql1 = String.format("DELETE FROM `borrower` WHERE id = %d;", id);
+                    sql2 = String.format("DELETE FROM `user` WHERE id = %d AND position = 'b';", id);
+                } else if(userType == 1){
+                    sql1 = String.format("DELETE FROM `librarian` WHERE id = %d;", id);
+                    sql2 = String.format("DELETE FROM `user` WHERE id = %d AND position = 'l';", id);
+                }
+
+                if(deleteRecord(sql1, sql2)){
+                    if(userType == 0){
+                        String sql3 = String.format("UPDATE `bookCopy` SET borrowerID = -1 WHERE borrowerID = %d;", id);
+                        DBManager.edit(sql3);
                         admin.removeBorrower(id);
+                    }
                     else if(userType == 1)
                         admin.removeLibrarian(id);
                     ((DefaultTableModel)t.getModel()).removeRow(row);
